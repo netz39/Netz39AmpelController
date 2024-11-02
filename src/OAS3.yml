@@ -1,0 +1,41 @@
+openapi: 3.0.0
+info:
+  title: Netz39 Ampel Controller API
+  description: Microservice to provide the Controller for our Traffic Light and Space Status.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local server
+paths:
+  /v0/health:
+    get:
+      summary: Get health status
+      description: Returns the health status of the application.
+      responses:
+        '200':
+          description: A JSON object containing the health status.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_version:
+                    type: string
+                  git_version:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+                  uptime:
+                    type: string
+  /v0/oas3:
+    get:
+      summary: Get OpenAPI 3.0 specification
+      description: Returns the OpenAPI 3.0 specification in plain text format.
+      responses:
+        '200':
+          description: The OpenAPI 3.0 specification.
+          content:
+            text/plain:
+              schema:
+                type: string
