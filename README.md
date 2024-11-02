@@ -19,7 +19,7 @@ Configuration is done using environment variables:
 * `MQTT_SPACESTATUS_ISOPEN_TOPIC`: MQTT topic to publish space status (default `isOpen`)
 * `MQTT_SPACESTATUS_LASTCHANGE_TOPIC`: MQTT topic to publish last change messages (default `lastchange`)
 * `MQTT_TRAFFIC_LIGHT_TOPIC`: MQTT topic to publish traffic light status (default `trafficlight`)
-* 
+
 ### Run with Docker
 
 ```bash
