@@ -12,7 +12,14 @@ run independently.
 Configuration is done using environment variables:
 
 * `PORT`: Target port when used with docker-compose (default `8080`)
-
+* `MQTT_BROKER`: MQTT broker server (default `mqtt`)
+* `MQTT_PORT`: MQTT broker port (default `1883`)
+* `MQTT_LEVER_STATE_TOPIC`: MQTT topic to listen for lever state messages (default `lever`)
+* `MQTT_DOOR_EVENTS_TOPIC`: MQTT topic to listen for door events (default `door`)
+* `MQTT_SPACESTATUS_ISOPEN_TOPIC`: MQTT topic to publish space status (default `isOpen`)
+* `MQTT_SPACESTATUS_LASTCHANGE_TOPIC`: MQTT topic to publish last change messages (default `lastchange`)
+* `MQTT_TRAFFIC_LIGHT_TOPIC`: MQTT topic to publish traffic light status (default `trafficlight`)
+* 
 ### Run with Docker
 
 ```bash
