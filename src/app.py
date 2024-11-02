@@ -15,6 +15,7 @@ import isodate
 
 import json
 
+from MqttObserver import MqttObserver
 
 startup_timestamp = datetime.now()
 
@@ -91,8 +92,27 @@ signal_received = False
 
 def main():
     arg_port = load_env('PORT', 8080)
+    arg_mqtt_broker_server = load_env('MQTT_BROKER', 'mqtt')
+    arg_mqtt_broker_port = load_env('MQTT_PORT', 1883)
+    arg_mqtt_lever_state_topic = load_env('MQTT_LEVER_STATE_TOPIC', 'lever')
+    arg_mqtt_door_events_topic = load_env('MQTT_DOOR_EVENTS_TOPIC', 'door')
+    arg_mqtt_spacestatus_is_open_topic = load_env('MQTT_SPACESTATUS_ISOPEN_TOPIC', 'isOpen')
+    arg_mqtt_spacestatus_lastchange_topic = load_env('MQTT_SPACESTATUS_LASTCHANGE_TOPIC', 'lastchange')
+    arg_mqtt_traffic_light_topic = load_env('MQTT_TRAFFIC_LIGHT_TOPIC', 'traffic_light')
 
     # Setup
+
+    observer = MqttObserver(
+        arg_mqtt_broker_server, arg_mqtt_broker_port,
+        {
+            "lever_state": arg_mqtt_lever_state_topic,
+            "door_events": arg_mqtt_door_events_topic,
+            "spacestatus_isOpen": arg_mqtt_spacestatus_is_open_topic,
+            "spacestatus_lastchange": arg_mqtt_spacestatus_lastchange_topic,
+            "traffic_light": arg_mqtt_traffic_light_topic
+        }
+    )
+    observer.start()
 
     app = make_app()
     sockets = tornado.netutil.bind_sockets(arg_port, '')
