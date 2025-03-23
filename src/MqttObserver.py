@@ -1,5 +1,5 @@
 from datetime import datetime
-
+import threading
 import paho.mqtt.client as mqtt
 
 class MqttObserver:
@@ -27,7 +27,7 @@ class MqttObserver:
 
         self.door_locked = False
         self.lever_open = False
-
+        self.light_off_timer = None
 
     def on_connect(self, client, _userdata, _flags, rc):
         print(f"Connected with result code {rc}")
@@ -53,6 +53,7 @@ class MqttObserver:
 
         self.update_status()
         self.update_traffic_light()
+        self.schedule_light_off()
 
     def handle_lever_state(self, state):
         self.lever_open = state == "open"
@@ -60,11 +61,43 @@ class MqttObserver:
     def handle_door_events(self, event):
         self.door_locked = event == "door locked"
 
+    def replace_schedule_light_off(self, new_timer):
+        """
+        Replace the current light off timer with a new one.
+
+        :param new_timer: The new timer to replace the current one. If None, the current timer will be cancelled.
+        """
+        if self.light_off_timer:
+            self.light_off_timer.cancel()
+
+        self.light_off_timer = new_timer
+
+        if self.light_off_timer:
+            self.light_off_timer.start()
+
+    def schedule_light_off(self):
+        if not self.lever_open and self.door_locked:
+            print("Scheduling light off in 30 seconds")
+            new_timer = threading.Timer(30.0, self.turn_off_lights)
+            self.replace_schedule_light_off(new_timer)
+        else:
+            self.replace_schedule_light_off(None)
+
+    def turn_off_lights(self):
+        print("Turning off lights")
+        self.client.publish(self.topics["traffic_light"], "off")
+        self.replace_schedule_light_off(None)
+
     def update_status(self):
         self.client.publish(self.topics["spacestatus_isOpen"], "true" if self.lever_open else "false")
         self.client.publish(self.topics["spacestatus_lastchange"], str(int(datetime.now().timestamp())))
 
     def update_traffic_light(self):
+        # cancel existing standby timer first
+        self.replace_schedule_light_off(None)
+
+        if self.light_off_timer:
+            self.light_off_timer.cancel()
         color = "green" if self.lever_open else "red"
         cmd = color + (" blink" if self.door_locked else "")
         self.client.publish(self.topics["traffic_light"], cmd)
