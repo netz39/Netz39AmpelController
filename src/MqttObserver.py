@@ -21,6 +21,7 @@ class MqttObserver:
         self.topics = topics
 
         self.client = mqtt.Client()
+        self.client.reconnect_on_failure = True
         self.client.on_connect = self.on_connect
         self.client.on_disconnect = self.on_disconnect
         self.client.on_message = self.on_message
@@ -35,11 +36,10 @@ class MqttObserver:
             print(f"Subscribing to topic {key}")
             client.subscribe(self.topics[key])
 
-    def on_disconnect(self, client, userdata, rc):
+    @staticmethod
+    def on_disconnect(_client, _userdata, rc):
         print(f"Disconnected with result code {rc}")
-        if rc != 0:
-            print("Unexpected disconnection. Reconnecting...")
-            self.client.reconnect()
+        # Reconnect is done automatically by the client due to reconnect_on_failure=True
 
     def on_message(self, client, userdata, msg):
         print(f"Message received on topic {msg.topic}: {msg.payload.decode()}")
