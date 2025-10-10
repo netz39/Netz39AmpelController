@@ -89,8 +89,8 @@ class MqttObserver:
         self.replace_schedule_light_off(None)
 
     def update_status(self):
-        self.client.publish(self.topics["spacestatus_isOpen"], "true" if self.lever_open else "false")
-        self.client.publish(self.topics["spacestatus_lastchange"], str(int(datetime.now().timestamp())))
+        self.client.publish(self.topics["spacestatus_isOpen"], "true" if self.lever_open else "false", retain=True)
+        self.client.publish(self.topics["spacestatus_lastchange"], str(int(datetime.now().timestamp())), retain=True)
 
     def update_traffic_light(self):
         # cancel existing standby timer first
