@@ -109,3 +109,12 @@ class MqttObserver:
     def stop(self):
         self.client.loop_stop()
         self.client.disconnect()
+
+    def is_loop_running(self):
+        # Paho does not expose the loop thread state through its public API.
+        # noinspection PyProtectedMember
+        thread = self.client._thread
+        return thread is not None and thread.is_alive()
+
+    def is_connected(self):
+        return self.client.is_connected()
