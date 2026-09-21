@@ -22,8 +22,9 @@ startup_timestamp = datetime.now()
 
 class HealthHandler(tornado.web.RequestHandler, ABC):
     # noinspection PyAttributeOutsideInit
-    def initialize(self):
+    def initialize(self, mqtt_observer):
         self.git_version = self._load_git_version()
+        self.mqtt_observer = mqtt_observer
 
     @staticmethod
     def _load_git_version():
@@ -55,9 +56,13 @@ class HealthHandler(tornado.web.RequestHandler, ABC):
         health['timestamp'] = isodate.datetime_isoformat(datetime.now())
         health['uptime'] = isodate.duration_isoformat(datetime.now() - startup_timestamp)
 
+        mqtt_loop_running = self.mqtt_observer.is_loop_running()
+        health['mqtt_loop_running'] = mqtt_loop_running
+        health['mqtt_connected'] = self.mqtt_observer.is_connected()
+
         self.set_header("Content-Type", "application/json")
+        self.set_status(200 if mqtt_loop_running else 503)
         self.write(json.dumps(health, indent=4))
-        self.set_status(200)
 
 
 class Oas3Handler(tornado.web.RequestHandler, ABC):
@@ -72,10 +77,10 @@ class Oas3Handler(tornado.web.RequestHandler, ABC):
         self.finish()
 
 
-def make_app():
+def make_app(mqtt_observer):
     version_path = r"/v[0-9]"
     return tornado.web.Application([
-        (version_path + r"/health", HealthHandler),
+        (version_path + r"/health", HealthHandler, {"mqtt_observer": mqtt_observer}),
         (version_path + r"/oas3", Oas3Handler),
     ])
 
@@ -114,7 +119,7 @@ def main():
     )
     observer.start()
 
-    app = make_app()
+    app = make_app(observer)
     sockets = tornado.netutil.bind_sockets(arg_port, '')
     server = tornado.httpserver.HTTPServer(app)
     server.add_sockets(sockets)
