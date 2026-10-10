@@ -85,7 +85,7 @@ class MqttObserver:
 
     def turn_off_lights(self):
         print("Turning off lights")
-        self.client.publish(self.topics["traffic_light"], "off")
+        self.client.publish(self.topics["traffic_light"], "off", retain=True)
         self.replace_schedule_light_off(None)
 
     def update_status(self):
@@ -100,7 +100,7 @@ class MqttObserver:
             self.light_off_timer.cancel()
         color = "green" if self.lever_open else "red"
         cmd = color + (" blink" if self.door_locked else "")
-        self.client.publish(self.topics["traffic_light"], cmd)
+        self.client.publish(self.topics["traffic_light"], cmd, retain=True)
 
     def start(self):
         self.client.connect(self.broker, self.port, 60)
